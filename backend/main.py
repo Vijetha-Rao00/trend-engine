@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from routes import trends, youtube, news
@@ -11,6 +11,17 @@ load_dotenv()
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Trend Engine API")
+
+# Inline middleware to automatically collapse consecutive double slashes in inbound paths [1]
+@app.middleware("http")
+async def collapse_double_slashes(request: Request, call_next):
+    path = request.scope.get("path", "")
+    if "//" in path:
+        while "//" in path:
+            path = path.replace("//", "/")
+        request.scope["path"] = path
+    response = await call_next(request)
+    return response
 
 # Dynamically load permitted origins for CORS validation from environment variables
 allowed_origins_raw = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")

@@ -28,9 +28,9 @@ import {
   Play,
 } from "lucide-react";
  
-// Dynamically sanitizes trailing slashes to prevent double slash routing errors [1]
+// Dynamically sanitizes any trailing slashes to prevent double slash routing errors [1]
 const raw_api_base = process.env.REACT_APP_API_BASE || "http://127.0.0.1:8000";
-const API_BASE = raw_api_base.endsWith("/") ? raw_api_base.slice(0, -1) : raw_api_base;
+const API_BASE = raw_api_base.replace(/\/+$/, "");
  
 // ── Recharts Tooltip ──────────────────────────────────────────────────────────
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -60,6 +60,33 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   }
   return null;
 };
+ 
+// ── SVG liquid-glass distortion filter ───────────────────────────────────────
+const GlassFilter = () => (
+  <svg style={{ display: "none", position: "absolute" }} aria-hidden="true">
+    <defs>
+      <filter
+        id="lq"
+        x="-10%" y="-10%" width="120%" height="120%"
+        filterUnits="objectBoundingBox"
+        colorInterpolationFilters="sRGB"
+      >
+        <feTurbulence type="fractalNoise" baseFrequency="0.0012 0.005" numOctaves="1" seed="17" result="turb" />
+        <feComponentTransfer in="turb" result="mapped">
+          <feFuncR type="gamma" amplitude="1" exponent="10" offset="0.5" />
+          <feFuncG type="gamma" amplitude="0" exponent="1" offset="0" />
+          <feFuncB type="gamma" amplitude="0" exponent="1" offset="0.5" />
+        </feComponentTransfer>
+        <feGaussianBlur in="turb" stdDeviation="3" result="soft" />
+        <feSpecularLighting in="soft" surfaceScale="4" specularConstant="1" specularExponent="80" lightingColor="white" result="spec">
+          <fePointLight x="-200" y="-200" z="300" />
+        </feSpecularLighting>
+        <feComposite in="spec" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="lit" />
+        <feDisplacementMap in="SourceGraphic" in2="soft" scale="100" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
+);
  
 // ── Liquid glass card shell (Optimized for GPU hardware acceleration) ──────────
 interface GlassCardProps {
