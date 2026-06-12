@@ -477,7 +477,7 @@ export default function App() {
         }
       `}</style>
  
-      {/* Dynamic SVG Filter completely bypassed for GPU-accelerated backdrop layouts */}
+      <GlassFilter />
  
       <div className="shell">
         {/* ── Background: always on, always below everything ── */}
