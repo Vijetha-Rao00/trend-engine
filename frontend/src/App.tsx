@@ -28,9 +28,9 @@ import {
   Play,
 } from "lucide-react";
  
-// Dynamically sanitizes any trailing slashes to prevent double slash routing errors [1]
+// Dynamically sanitizes trailing slashes to prevent double slash routing errors [1]
 const raw_api_base = process.env.REACT_APP_API_BASE || "http://127.0.0.1:8000";
-const API_BASE = raw_api_base.replace(/\/+$/, "");
+const API_BASE = raw_api_base.endsWith("/") ? raw_api_base.slice(0, -1) : raw_api_base;
  
 // ── Recharts Tooltip ──────────────────────────────────────────────────────────
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -898,7 +898,7 @@ export default function App() {
                       },
                     ].map(d => (
                       <div key={d.n} style={{ padding: "16px 0", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                        <div style={{ display: "flex", alignItems: "center", justify-content: "space-between", marginBottom: 8 }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                             <span style={{ fontSize: 11, fontWeight: 900, color: "rgba(99,102,241,0.65)", letterSpacing: "0.1em" }}>{d.n}</span>
                             <p style={{ fontSize: 13, fontWeight: 800, color: "rgba(255,255,255,0.92)", letterSpacing: "-0.01em" }}>{d.title}</p>
