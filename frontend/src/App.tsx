@@ -28,8 +28,9 @@ import {
   Play,
 } from "lucide-react";
  
-// Dynamic API routing to automatically fall back to localhost in your local workspace [1]
-const API_BASE = process.env.REACT_APP_API_BASE || "http://127.0.0.1:8000";
+// Dynamically sanitizes trailing slashes to prevent double slash routing errors [1]
+const raw_api_base = process.env.REACT_APP_API_BASE || "http://127.0.0.1:8000";
+const API_BASE = raw_api_base.endsWith("/") ? raw_api_base.slice(0, -1) : raw_api_base;
  
 // ── Recharts Tooltip ──────────────────────────────────────────────────────────
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -60,34 +61,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
  
-// ── SVG liquid-glass distortion filter ───────────────────────────────────────
-const GlassFilter = () => (
-  <svg style={{ display: "none", position: "absolute" }} aria-hidden="true">
-    <defs>
-      <filter
-        id="lq"
-        x="-10%" y="-10%" width="120%" height="120%"
-        filterUnits="objectBoundingBox"
-        colorInterpolationFilters="sRGB"
-      >
-        <feTurbulence type="fractalNoise" baseFrequency="0.0012 0.005" numOctaves="1" seed="17" result="turb" />
-        <feComponentTransfer in="turb" result="mapped">
-          <feFuncR type="gamma" amplitude="1" exponent="10" offset="0.5" />
-          <feFuncG type="gamma" amplitude="0" exponent="1" offset="0" />
-          <feFuncB type="gamma" amplitude="0" exponent="1" offset="0.5" />
-        </feComponentTransfer>
-        <feGaussianBlur in="turb" stdDeviation="3" result="soft" />
-        <feSpecularLighting in="soft" surfaceScale="4" specularConstant="1" specularExponent="80" lightingColor="white" result="spec">
-          <fePointLight x="-200" y="-200" z="300" />
-        </feSpecularLighting>
-        <feComposite in="spec" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="lit" />
-        <feDisplacementMap in="SourceGraphic" in2="soft" scale="100" xChannelSelector="R" yChannelSelector="G" />
-      </filter>
-    </defs>
-  </svg>
-);
- 
-// ── Liquid glass card shell ───────────────────────────────────────────────────
+// ── Liquid glass card shell (Optimized for GPU hardware acceleration) ──────────
 interface GlassCardProps {
   children: React.ReactNode;
   style?: React.CSSProperties;
@@ -97,27 +71,26 @@ interface GlassCardProps {
  
 const GlassCard: React.FC<GlassCardProps> = ({ children, style, className = "", scrollable }) => (
   <div className={className} style={{ position: "relative", borderRadius: 20, overflow: "hidden", ...style }}>
-    {/* blur + distortion */}
+    {/* Fully GPU-accelerated backdrop blur and color overlay */}
     <div style={{
       position: "absolute", inset: 0, zIndex: 0, borderRadius: 20,
-      backdropFilter: "blur(40px) saturate(1.3)",
-      WebkitBackdropFilter: "blur(40px) saturate(1.3)",
-      filter: "url(#lq)",
+      backdropFilter: "blur(32px) saturate(1.4)",
+      WebkitBackdropFilter: "blur(32px) saturate(1.4)",
       isolation: "isolate",
     }} />
-    {/* dark obsidian polarized overlay to allow high contrast text visibility */}
+    {/* Dark obsidian polarized overlay to allow high contrast text visibility */}
     <div style={{ position: "absolute", inset: 0, zIndex: 1, borderRadius: 20, background: "rgba(4, 4, 8, 0.82)" }} />
-    {/* inner highlight rim */}
+    {/* Inner highlight rim */}
     <div style={{
       position: "absolute", inset: 0, zIndex: 2, borderRadius: 20, pointerEvents: "none",
       boxShadow: "inset 1.5px 1.5px 1px rgba(255,255,255,0.22), inset -1px -1px 1px rgba(255,255,255,0.1), 0 12px 40px rgba(0,0,0,0.5)",
     }} />
-    {/* border */}
+    {/* Border */}
     <div style={{
       position: "absolute", inset: 0, zIndex: 3, borderRadius: 20, pointerEvents: "none",
       border: "1px solid rgba(255,255,255,0.1)",
     }} />
-    {/* content */}
+    {/* Content container */}
     <div style={{
       position: "relative", zIndex: 4,
       padding: "24px 28px",
@@ -504,7 +477,7 @@ export default function App() {
         }
       `}</style>
  
-      <GlassFilter />
+      {/* Dynamic SVG Filter completely bypassed for GPU-accelerated backdrop layouts */}
  
       <div className="shell">
         {/* ── Background: always on, always below everything ── */}
@@ -898,7 +871,7 @@ export default function App() {
                       },
                     ].map(d => (
                       <div key={d.n} style={{ padding: "16px 0", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                        <div style={{ display: "flex", alignItems: "center", justify-content: "space-between", marginBottom: 8 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                             <span style={{ fontSize: 11, fontWeight: 900, color: "rgba(99,102,241,0.65)", letterSpacing: "0.1em" }}>{d.n}</span>
                             <p style={{ fontSize: 13, fontWeight: 800, color: "rgba(255,255,255,0.92)", letterSpacing: "-0.01em" }}>{d.title}</p>
