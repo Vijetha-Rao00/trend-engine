@@ -12,7 +12,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Trend Engine API")
 
-# Inline middleware to automatically collapse consecutive double slashes in inbound paths [1]
+# Inline middleware to automatically collapse consecutive double slashes in inbound paths
 @app.middleware("http")
 async def collapse_double_slashes(request: Request, call_next):
     path = request.scope.get("path", "")
@@ -23,14 +23,11 @@ async def collapse_double_slashes(request: Request, call_next):
     response = await call_next(request)
     return response
 
-# Dynamically load permitted origins for CORS validation from environment variables
-allowed_origins_raw = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")
-allowed_origins = [o.strip() for o in allowed_origins_raw.split(",") if o.strip()]
-
+# Standardize to public wildcard origins to allow dynamic Vercel previews and local connections seamlessly
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,  # Must be False when using allow_origins=["*"]
     allow_methods=["*"],
     allow_headers=["*"],
 )
